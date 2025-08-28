@@ -276,12 +276,29 @@ router.post('/chunk/init', (req, res) => {
       fs.mkdirSync(chunkDir, { recursive: true });
     }
     
+    // 从文件扩展名推断 MIME 类型
+    const ext = path.extname(filename).toLowerCase();
+    const mimeTypes = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+      '.pdf': 'application/pdf',
+      '.txt': 'text/plain',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.zip': 'application/zip'
+    };
+    const mimetype = mimeTypes[ext] || 'application/octet-stream';
+    
     // 存储上传会话信息
     uploadSessions.set(uploadId, {
       filename,
       filesize,
       chunkSize,
       totalChunks,
+      mimetype,
       uploadedChunks: [],
       chunkDir
     });
@@ -385,21 +402,47 @@ router.post('/chunk/merge', (req, res) => {
     
     writeStream.end();
     
-    // 清理临时文件
-    fs.rmSync(session.chunkDir, { recursive: true, force: true });
-    uploadSessions.delete(uploadId);
-    
-    const stats = fs.statSync(finalPath);
-    
-    res.json({
-      success: true,
-      message: '分片合并完成',
-      data: {
-        filename: finalFilename,
-        originalname: filename,
-        size: stats.size,
-        url: `${config.getServerUrl()}/uploads/${finalFilename}`
+    // 等待文件写入完成
+    writeStream.on('finish', () => {
+      try {
+        // 清理临时文件
+        fs.rmSync(session.chunkDir, { recursive: true, force: true });
+        uploadSessions.delete(uploadId);
+        
+        const stats = fs.statSync(finalPath);
+        
+        res.json({
+           success: true,
+           message: '分片合并完成',
+           data: {
+             filename: finalFilename,
+             originalname: filename,
+             mimetype: session.mimetype || 'application/octet-stream',
+             size: stats.size,
+             url: `${config.getServerUrl()}/uploads/${finalFilename}`
+           }
+         });
+      } catch (error) {
+        console.error('分片合并完成后处理错误:', error);
+        res.status(500).json({
+          success: false,
+          message: '文件处理失败',
+          error: error.message
+        });
       }
+    });
+    
+    writeStream.on('error', (error) => {
+      // 清理临时文件
+      if (fs.existsSync(session.chunkDir)) {
+        fs.rmSync(session.chunkDir, { recursive: true, force: true });
+      }
+      uploadSessions.delete(uploadId);
+      
+      res.status(500).json({
+        success: false,
+        message: '分片合并失败: ' + error.message
+      });
     });
   } catch (error) {
     res.status(500).json({
