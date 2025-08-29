@@ -498,32 +498,43 @@ const uploadChunkFile = async () => {
     const initResult = await initResponse.json()
     const uploadId = initResult.uploadId
 
-    // 上传每个分片
+    // 创建所有分片上传任务
+    const uploadTasks = []
     for (let i = 0; i < totalChunks.value; i++) {
       const start = i * chunkSize.value
       const end = Math.min(start + chunkSize.value, chunkFile.value.size)
       const chunk = chunkFile.value.slice(start, end)
 
-      const formData = new FormData()
-      formData.append('chunk', chunk)
-      formData.append('uploadId', uploadId)
-      formData.append('chunkIndex', i)
-      formData.append('totalChunks', totalChunks.value)
-      formData.append('filename', chunkFile.value.name)
+      const uploadTask = async () => {
+        const formData = new FormData()
+        formData.append('chunk', chunk)
+        formData.append('uploadId', uploadId)
+        formData.append('chunkIndex', i)
+        formData.append('totalChunks', totalChunks.value)
+        formData.append('filename', chunkFile.value.name)
 
-      const chunkResponse = await fetch(`${apiBaseUrl}/upload/chunk/upload`, {
-        method: 'POST',
-        body: formData
-      })
+        const chunkResponse = await fetch(`${apiBaseUrl}/upload/chunk/upload`, {
+          method: 'POST',
+          body: formData
+        })
 
-      if (!chunkResponse.ok) {
-        throw new Error(`分片 ${i + 1} 上传失败`)
+        if (!chunkResponse.ok) {
+          throw new Error(`分片 ${i + 1} 上传失败`)
+        }
+
+        // 更新进度
+        uploadedChunks.value.push(i)
+        currentChunk.value = uploadedChunks.value.length
+        chunkProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100)
+        
+        return i
       }
-
-      currentChunk.value = i + 1
-      chunkProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100)
-      uploadedChunks.value.push(i)
+      
+      uploadTasks.push(uploadTask())
     }
+
+    // 并发上传所有分片
+    await Promise.all(uploadTasks)
 
     // 合并分片
     const mergeResponse = await fetch(`${apiBaseUrl}/upload/chunk/merge`, {
