@@ -58,21 +58,26 @@
         </button>
         <div v-if="resumeFile" class="file-info">
           <p>已选择: {{ resumeFile.name }} ({{ formatFileSize(resumeFile.size) }})</p>
+          <p>分片大小: {{ formatFileSize(resumeChunkSize) }}</p>
+          <p>总分片数: {{ resumeTotalChunks }}</p>
           <div class="resume-controls">
             <button @click="startResumeUpload" :disabled="resumeUploading" class="btn btn-success">
               {{ resumeUploading ? '上传中...' : '开始上传' }}
             </button>
-            <button @click="pauseResumeUpload" :disabled="!resumeUploading" class="btn btn-danger">
+            <button @click="pauseResumeUpload" :disabled="!resumeUploading || resumePaused" v-if="resumeUploading" class="btn btn-danger">
               暂停上传
             </button>
-            <button @click="resumeUpload" :disabled="resumeUploading || !resumePaused" class="btn btn-info">
-              继续上传
+            <button @click="resumeUpload" :disabled="resumeUploading || !resumePaused" v-if="resumePaused" class="btn btn-info">
+              恢复上传
             </button>
           </div>
           <div v-if="resumeProgress > 0" class="progress-bar">
             <div class="progress-fill" :style="{ width: resumeProgress + '%' }"></div>
+            <span class="progress-text">{{ resumeProgress }}% ({{ resumeCurrentChunk }}/{{ resumeTotalChunks }})</span>
           </div>
-          <p v-if="resumeProgress > 0">断点续传进度: {{ resumeProgress }}%</p>
+          <div v-if="resumePaused" class="alert alert-warning">
+            断点续传已暂停，当前进度：第 {{ resumeCurrentChunk }} 个分片
+          </div>
         </div>
       </div>
     </div>
@@ -198,6 +203,13 @@ const resumePaused = ref(false)
 const resumeProgress = ref(0)
 const resumeUploadId = ref(null)
 const resumeController = ref(null)
+const resumeChunkSize = ref(1024 * 1024) // 1MB per chunk
+const resumeCurrentChunk = ref(0)
+const resumeUploadedChunks = ref([])
+const resumeTotalChunks = computed(() => {
+  if (!resumeFile.value) return 0
+  return Math.ceil(resumeFile.value.size / resumeChunkSize.value)
+})
 
 // 流式上传相关
 const streamFile = ref(null)
@@ -290,6 +302,8 @@ const handleResumeFileSelect = (event) => {
   if (file) {
     resumeFile.value = file
     resumeProgress.value = 0
+    resumeCurrentChunk.value = 0
+    resumeUploadedChunks.value = []
     resumeUploadId.value = null
   }
 }
@@ -320,6 +334,9 @@ const startResumeUpload = async () => {
 
   resumeUploading.value = true
   resumePaused.value = false
+  resumeProgress.value = 0
+  resumeCurrentChunk.value = 0
+  resumeUploadedChunks.value = []
   resumeController.value = new AbortController()
 
   try {
@@ -332,20 +349,24 @@ const startResumeUpload = async () => {
       body: JSON.stringify({
         filename: resumeFile.value.name,
         filesize: resumeFile.value.size,
-        lastModified: resumeFile.value.lastModified
+        lastModified: resumeFile.value.lastModified,
+        chunkSize: resumeChunkSize.value,
+        totalChunks: resumeTotalChunks.value
       })
     })
 
     const checkResult = await checkResponse.json()
-    const startByte = checkResult.uploadedSize || 0
     resumeUploadId.value = checkResult.uploadId
     
-    if (startByte > 0) {
-      resumeProgress.value = Math.round((startByte / resumeFile.value.size) * 100)
+    // 如果有已上传的分片，恢复进度
+    if (checkResult.uploadedChunks && checkResult.uploadedChunks.length > 0) {
+      resumeUploadedChunks.value = checkResult.uploadedChunks
+      resumeCurrentChunk.value = resumeUploadedChunks.value.length
+      resumeProgress.value = Math.round((resumeCurrentChunk.value / resumeTotalChunks.value) * 100)
     }
 
-    // 从断点开始上传
-    await uploadFromByte(startByte)
+    // 开始逐个上传分片
+    await uploadResumeChunksSequentially()
   } catch (error) {
     console.error('断点续传失败:', error)
     alert('断点续传失败: ' + error.message)
@@ -354,22 +375,36 @@ const startResumeUpload = async () => {
   }
 }
 
-// 断点续传 - 从指定字节开始上传
-const uploadFromByte = async (startByte) => {
-  const chunkSize = 1024 * 1024 // 1MB chunks
-  let currentByte = startByte
+// 断点续传 - 逐个上传分片
+const uploadResumeChunksSequentially = async () => {
+  for (let i = resumeCurrentChunk.value; i < resumeTotalChunks.value; i++) {
+    // 检查是否暂停
+    if (resumePaused.value) {
+      console.log('断点续传已暂停')
+      return
+    }
 
-  while (currentByte < resumeFile.value.size && !resumePaused.value) {
-    const chunk = resumeFile.value.slice(currentByte, Math.min(currentByte + chunkSize, resumeFile.value.size))
-    
-    const formData = new FormData()
-    formData.append('chunk', chunk)
-    formData.append('uploadId', resumeUploadId.value)
-    formData.append('filename', resumeFile.value.name)
-    formData.append('currentByte', currentByte)
-    formData.append('totalSize', resumeFile.value.size)
+    // 检查分片是否已上传
+    if (resumeUploadedChunks.value.includes(i)) {
+      resumeCurrentChunk.value = i + 1
+      resumeProgress.value = Math.round((resumeCurrentChunk.value / resumeTotalChunks.value) * 100)
+      continue
+    }
 
     try {
+      const start = i * resumeChunkSize.value
+      const end = Math.min(start + resumeChunkSize.value, resumeFile.value.size)
+      const chunk = resumeFile.value.slice(start, end)
+
+      const formData = new FormData()
+      formData.append('chunk', chunk)
+      formData.append('uploadId', resumeUploadId.value)
+      formData.append('chunkIndex', i)
+      formData.append('totalChunks', resumeTotalChunks.value)
+      formData.append('filename', resumeFile.value.name)
+      formData.append('currentByte', start)
+      formData.append('totalSize', resumeFile.value.size)
+
       const response = await fetch(`${apiBaseUrl}/upload/resume/chunk`, {
         method: 'POST',
         body: formData,
@@ -377,23 +412,31 @@ const uploadFromByte = async (startByte) => {
       })
 
       if (!response.ok) {
-        throw new Error('分片上传失败')
+        throw new Error(`断点续传分片 ${i + 1} 上传失败`)
       }
 
-      const result = await response.json()
-      currentByte = result.uploadedSize
-      resumeProgress.value = Math.round((currentByte / resumeFile.value.size) * 100)
+      // 更新进度
+      resumeUploadedChunks.value.push(i)
+      resumeCurrentChunk.value = i + 1
+      resumeProgress.value = Math.round((resumeCurrentChunk.value / resumeTotalChunks.value) * 100)
+      
+      console.log(`断点续传分片 ${i + 1}/${resumeTotalChunks.value} 上传完成`)
     } catch (error) {
       if (error.name === 'AbortError') {
-        console.log('上传已暂停')
+        console.log('断点续传被取消')
         return
       }
       throw error
     }
   }
 
-  // 完成上传
-  if (currentByte >= resumeFile.value.size) {
+  // 所有分片上传完成，完成上传
+  await completeResumeUpload()
+}
+
+// 断点续传 - 完成上传
+const completeResumeUpload = async () => {
+  try {
     const completeResponse = await fetch(`${apiBaseUrl}/upload/resume/complete`, {
       method: 'POST',
       headers: {
@@ -401,7 +444,8 @@ const uploadFromByte = async (startByte) => {
       },
       body: JSON.stringify({
         uploadId: resumeUploadId.value,
-        filename: resumeFile.value.name
+        filename: resumeFile.value.name,
+        totalChunks: resumeTotalChunks.value
       })
     })
 
@@ -410,7 +454,13 @@ const uploadFromByte = async (startByte) => {
       uploadResults.value.push(completeResult.data)
       alert('断点续传完成！')
       loadFileList()
+      // 重置状态
+      resumeUploadId.value = null
+      resumeUploadedChunks.value = []
     }
+  } catch (error) {
+    console.error('断点续传完成失败:', error)
+    alert('断点续传完成失败: ' + error.message)
   }
 }
 
@@ -427,10 +477,17 @@ const resumeUpload = async () => {
   if (!resumeFile.value || !resumeUploadId.value) return
   
   resumePaused.value = false
+  resumeUploading.value = true
   resumeController.value = new AbortController()
   
-  const currentByte = Math.round((resumeProgress.value / 100) * resumeFile.value.size)
-  await uploadFromByte(currentByte)
+  try {
+    await uploadResumeChunksSequentially()
+  } catch (error) {
+    console.error('恢复断点续传失败:', error)
+    alert('恢复断点续传失败: ' + error.message)
+  } finally {
+    resumeUploading.value = false
+  }
 }
 
 // 流式上传
@@ -929,6 +986,7 @@ h2 {
   border-radius: 10px;
   overflow: hidden;
   margin: 10px 0;
+  position: relative;
 }
 
 .progress-fill {
@@ -936,6 +994,17 @@ h2 {
   background: linear-gradient(90deg, #007bff, #0056b3);
   transition: width 0.3s ease;
   border-radius: 10px;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
 /* 响应式设计 */
