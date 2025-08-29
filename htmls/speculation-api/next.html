@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Speculation Rules Demo - 下一页</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .gallery img {
+      width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <h1>下一页 - 图片画廊</h1>
+  <p>如果你是从首页点进来的，图片应该瞬间显示 🎉</p>
+  <a href="http://127.0.0.1:5500/htmls/speculation-api/index.html">返回首页</a>
+
+  <div class="gallery">
+    <!-- 放很多大图 -->
+    <img src="https://picsum.photos/1200/800?random=1" alt="img1">
+    <img src="https://picsum.photos/1200/800?random=2" alt="img2">
+    <img src="https://picsum.photos/1200/800?random=3" alt="img3">
+    <img src="https://picsum.photos/1200/800?random=4" alt="img4">
+    <img src="https://picsum.photos/1200/800?random=5" alt="img5">
+    <img src="https://picsum.photos/1200/800?random=6" alt="img6">
+    <img src="https://picsum.photos/1200/800?random=7" alt="img7">
+    <img src="https://picsum.photos/1200/800?random=8" alt="img8">
+    <img src="https://picsum.photos/1200/800?random=9" alt="img9">
+    <img src="https://picsum.photos/1200/800?random=10" alt="img10">
+  </div>
+</body>
+</html>

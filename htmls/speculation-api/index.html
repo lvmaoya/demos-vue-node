@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Speculation Rules Demo - 首页</title>
+</head>
+<body>
+  <h1>首页</h1>
+  <p>这个页面会预渲染 <code>http://127.0.0.1:5500/htmls/speculation-api/next.html</code></p>
+
+  <!-- 链接到下一页 -->
+  <a href="http://127.0.0.1:5500/htmls/speculation-api/next.html">前往下一页（应该是秒开）</a>
+
+  <!-- Speculation Rules 预渲染规则 -->
+  <script type="speculationrules">
+  {
+    "prerender": [
+      {
+        "source": "list",
+        "urls": ["http://127.0.0.1:5500/htmls/speculation-api/next.html"]
+      }
+    ]
+  }
+  </script>
+</body>
+</html>
