@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        let i = 0;
+        const total = 1e6;
+
+        function log(deadline) {
+            // deadline 表示浏览器的空闲时间
+            while (i < total && deadline.timeRemaining() > 0) {
+                console.log(i, "------", Math.random() * i);
+                i++;
+            }
+
+            // 如果没完成，继续注册下一个 idle 回调
+            if (i < total) {
+                requestIdleCallback(log);
+            } else {
+                console.log("✅ 全部完成");
+            }
+        }
+
+        // 启动任务
+        requestIdleCallback(log);
+    </script>
+    <h1>hello world</h1>
+</body>
+
+</html>
