@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>内存泄漏</title>
+</head>
+<body>
+  <button id="btn">制造泄漏</button>
+  <script>
+    // 全局数组，始终持有引用
+    const leaks = [];
+
+    document.getElementById("btn").addEventListener("click", () => {
+      // 每次点击都会往 leaks 里 push 大对象
+      leaks.push(new Array(1e6).fill("leak"));
+      console.log("泄漏对象总数:", leaks.length);
+    });
+  </script>
+</body>
+</html>

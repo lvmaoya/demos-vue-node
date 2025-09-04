@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>正常内存</title>
+</head>
+<body>
+  <button id="btn">创建临时对象</button>
+  <script>
+    document.getElementById("btn").addEventListener("click", () => {
+      // 创建临时对象，但不保存引用
+      let data = new Array(1e6).fill("temp");
+      console.log("创建了临时对象:", data.length);
+      // 这个 data 出了函数作用域就没引用了，GC 会自动回收
+    });
+  </script>
+</body>
+</html>
