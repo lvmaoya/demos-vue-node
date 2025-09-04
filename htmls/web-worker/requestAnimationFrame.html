@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 打印任务
+      function log() {
+        let start = 0;
+        const total = 1e6;     // 总循环次数
+        const chunk = 1000;    // 每次处理多少条（分片大小）
+        function process() {
+          const end = Math.min(start + chunk, total);
+          for (let i = start; i < end; i++) {
+            console.log(i, "------", Math.random() * i);
+          }
+          if (end < total) {
+            requestAnimationFrame(process);
+          }
+          start = end;
+        }
+        process()
+      }
+      log()
+    </script>
+    <h1>hello world</h1>
+  </body>
+</html>
