@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>BFC 浮动例子</title>
+    <style>
+        .container {
+            border: 2px solid blue;
+            /* 注意：这里没有触发 BFC */
+            float: left;
+            /* 触发 BFC */
+        }
+
+        .float-box {
+            float: left;
+            width: 100px;
+            height: 100px;
+            background: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="float-box"></div>
+    </div>
+</body>
+
+</html>
