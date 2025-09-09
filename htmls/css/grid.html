@@ -1,0 +1,40 @@
+<div class="grid">
+    <div class="header">Header</div>
+    <div class="sidebar">Sidebar</div>
+    <div class="main">Main</div>
+    <div class="footer">Footer</div>
+</div>
+<style>
+    .grid {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        /* 左侧固定200px，右侧自适应 */
+        grid-template-rows: 60px 1fr 40px;
+        /* 顶部60px，中间自适应，底部40px */
+        grid-template-areas:
+            "header header"
+            "sidebar main"
+            "footer footer";
+        height: 100vh;
+    }
+
+    .header {
+        grid-area: header;
+        background: #4caf50;
+    }
+
+    .sidebar {
+        grid-area: sidebar;
+        background: #2196f3;
+    }
+
+    .main {
+        grid-area: main;
+        background: #f44336;
+    }
+
+    .footer {
+        grid-area: footer;
+        background: #9c27b0;
+    }
+</style>

@@ -1,0 +1,37 @@
+<style>
+    div {
+        margin: 40px;
+    }
+
+    .triangle {
+        width: 0;
+        height: 0;
+        border-left: 50px solid transparent;
+        border-right: 50px solid transparent;
+        border-bottom: 100px solid red;
+    }
+
+    .triangle1 {
+        width: 100px;
+        height: 100px;
+        clip-path: polygon(50px 0, 0 100px, 100px 100px);
+        background-color: red;
+    }
+
+    .triangle2 {
+        width: 100px;
+        height: 100px;
+    }
+</style>
+
+<body>
+    <div class="triangle"></div>
+    <div class="triangle1"></div>
+    <div class="triangle2">
+        <svg viewBox="0 0 100 100">
+            <polygon points="50,0 0,100 100,100" fill="red"></polygon>
+        </svg>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>CSS 三角形实现方式对比</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 40px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+    }
+    .item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .title {
+      font-size: 14px;
+      color: #333;
+    }
+    /* 1. border */
+    .triangle-border {
+      width: 0;
+      height: 0;
+      border-left: 50px solid transparent;
+      border-right: 50px solid transparent;
+      border-bottom: 100px solid #e74c3c;
+    }
+    /* 2. clip-path */
+    .triangle-clip {
+      width: 100px;
+      height: 100px;
+      background: #3498db;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+    /* 3. transform skew */
+    .triangle-transform {
+      width: 100px;
+      height: 100px;
+      background: #2ecc71;
+      transform: skewX(-45deg);
+    }
+    /* 4. gradient */
+    .triangle-gradient {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(45deg, transparent 50%, #9b59b6 50%);
+    }
+    /* 5. 伪元素 + rotate */
+    .triangle-pseudo {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+    .triangle-pseudo::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #f39c12;
+      transform: rotate(45deg);
+      clip-path: polygon(0 0, 100% 0, 0 100%);
+    }
+    /* 6. svg */
+    svg {
+      width: 100px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="item">
+    <div class="triangle-border"></div>
+    <div class="title">1. border 边框法</div>
+  </div>
+
+  <div class="item">
+    <div class="triangle-clip"></div>
+    <div class="title">2. clip-path 裁剪</div>
+  </div>
+
+  <div class="item">
+    <div class="triangle-transform"></div>
+    <div class="title">3. transform 倾斜</div>
+  </div>
+
+  <div class="item">
+    <div class="triangle-gradient"></div>
+    <div class="title">4. 渐变背景</div>
+  </div>
+
+  <div class="item">
+    <div class="triangle-pseudo"></div>
+    <div class="title">5. 伪元素 + rotate</div>
+  </div>
+
+  <div class="item">
+    <svg viewBox="0 0 100 100">
+      <polygon points="50,0 0,100 100,100" fill="#16a085" />
+    </svg>
+    <div class="title">6. SVG polygon</div>
+  </div>
+</body>
+</html>

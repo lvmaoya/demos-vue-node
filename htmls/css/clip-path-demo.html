@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>clip-path Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      padding: 40px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px;
+    }
+    .item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .shape {
+      width: 200px;
+      height: 200px;
+      background: url("https://picsum.photos/300/300?random=1") no-repeat center/cover;
+      transition: clip-path 0.5s;
+    }
+    .title {
+      font-size: 14px;
+      color: #333;
+    }
+    /* 1. circle */
+    .circle {
+      clip-path: circle(50% at 50% 50%);
+    }
+    /* 2. ellipse */
+    .ellipse {
+      clip-path: ellipse(50% 30% at 50% 50%);
+    }
+    /* 3. inset */
+    .inset {
+      clip-path: inset(20px 40px 20px 40px round 20px);
+    }
+    /* 4. polygon (三角形) */
+    .polygon {
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+    /* hover 动画：裁剪形状变换 */
+    .shape:hover {
+      clip-path: circle(70% at 50% 50%);
+    }
+  </style>
+</head>
+<body>
+  <div class="item">
+    <div class="shape circle"></div>
+    <div class="title">circle()</div>
+  </div>
+  <div class="item">
+    <div class="shape ellipse"></div>
+    <div class="title">ellipse()</div>
+  </div>
+  <div class="item">
+    <div class="shape inset"></div>
+    <div class="title">inset()</div>
+  </div>
+  <div class="item">
+    <div class="shape polygon"></div>
+    <div class="title">polygon()</div>
+  </div>
+</body>
+</html>
