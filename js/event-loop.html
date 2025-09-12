@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        console.log('start');
+
+        setTimeout(() => {
+            console.log('timeout'); // 宏任务
+        }, 0);
+
+        Promise.resolve().then(() => {
+            console.log('promise'); // 微任务
+        });
+
+        console.log('end');
+
+    </script>
+</body>
+
+</html>

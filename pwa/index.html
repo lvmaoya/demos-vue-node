@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Demo - Progressive Web App 演示</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196F3">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .feature {
+            margin-bottom: 25px;
+        }
+        
+        .feature h3 {
+            color: #2196F3;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .feature p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .status.online {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .status.offline {
+            background: #FF5722;
+            color: white;
+        }
+        
+        .btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #1976D2;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .install-prompt {
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .demo-section {
+            margin-top: 20px;
+        }
+        
+        .demo-section h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .cache-list {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        
+        .cache-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .cache-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 PWA Demo</h1>
+            <p>Progressive Web App 完整演示</p>
+        </div>
+        
+        <div class="install-prompt" id="installPrompt">
+            <strong>📱 可以安装此应用！</strong>
+            <p>点击下方按钮将此PWA安装到您的设备上</p>
+            <button class="btn" id="installBtn">安装应用</button>
+            <button class="btn" id="dismissBtn" style="background: transparent; color: white; border: 1px solid white;">稍后再说</button>
+        </div>
+        
+        <div class="card">
+            <h2>什么是 PWA？</h2>
+            <p>Progressive Web App（渐进式网络应用）是一种结合了网页和原生应用优势的技术。它具有以下核心特性：</p>
+            
+            <div class="feature">
+                <h3>📱 可安装性</h3>
+                <p>用户可以将PWA安装到设备主屏幕，像原生应用一样启动</p>
+                <span class="status" id="installableStatus">检测中...</span>
+            </div>
+            
+            <div class="feature">
+                <h3>🔄 离线工作</h3>
+                <p>通过Service Worker缓存资源，即使离线也能正常使用</p>
+                <span class="status" id="offlineStatus">检测中...</span>
+            </div>
+            
+            <div class="feature">
+                <h3>🔔 推送通知</h3>
+                <p>支持后台推送通知，提升用户参与度</p>
+                <span class="status" id="notificationStatus">检测中...</span>
+            </div>
+            
+            <div class="feature">
+                <h3>📶 网络状态感知</h3>
+                <p>能够检测网络状态变化并相应调整行为</p>
+                <span class="status" id="networkStatus">在线</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>PWA 功能演示</h2>
+            
+            <div class="demo-section">
+                <h4>Service Worker 控制</h4>
+                <button class="btn" id="registerSW">注册 Service Worker</button>
+                <button class="btn" id="unregisterSW">注销 Service Worker</button>
+                <button class="btn" id="updateSW">更新缓存</button>
+                <p id="swStatus">Service Worker 状态：未注册</p>
+            </div>
+            
+            <div class="demo-section">
+                <h4>通知功能</h4>
+                <button class="btn" id="requestNotification">请求通知权限</button>
+                <button class="btn" id="sendNotification" disabled>发送测试通知</button>
+                <p id="notificationInfo">通知权限：未请求</p>
+            </div>
+            
+            <div class="demo-section">
+                <h4>缓存管理</h4>
+                <button class="btn" id="showCache">查看缓存内容</button>
+                <button class="btn" id="clearCache">清除缓存</button>
+                <div class="cache-list" id="cacheList" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>技术实现</h2>
+            <div class="feature">
+                <h3>核心文件</h3>
+                <ul>
+                    <li><strong>manifest.json</strong> - 应用清单文件，定义应用元数据</li>
+                    <li><strong>sw.js</strong> - Service Worker文件，处理缓存和离线功能</li>
+                    <li><strong>index.html</strong> - 主页面，包含PWA功能演示</li>
+                </ul>
+            </div>
+            
+            <div class="feature">
+                <h3>关键技术</h3>
+                <ul>
+                    <li><strong>Service Worker API</strong> - 后台脚本，处理网络请求和缓存</li>
+                    <li><strong>Cache API</strong> - 缓存管理，实现离线访问</li>
+                    <li><strong>Web App Manifest</strong> - 应用配置，支持安装到主屏幕</li>
+                    <li><strong>Notification API</strong> - 推送通知功能</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // PWA 功能实现
+        let deferredPrompt;
+        let swRegistration;
+        
+        // 检查浏览器支持
+        function checkSupport() {
+            const installableStatus = document.getElementById('installableStatus');
+            const offlineStatus = document.getElementById('offlineStatus');
+            const notificationStatus = document.getElementById('notificationStatus');
+            
+            // 检查Service Worker支持
+            if ('serviceWorker' in navigator) {
+                offlineStatus.textContent = '支持';
+                offlineStatus.className = 'status online';
+            } else {
+                offlineStatus.textContent = '不支持';
+                offlineStatus.className = 'status offline';
+            }
+            
+            // 检查通知支持
+            if ('Notification' in window) {
+                notificationStatus.textContent = '支持';
+                notificationStatus.className = 'status online';
+            } else {
+                notificationStatus.textContent = '不支持';
+                notificationStatus.className = 'status offline';
+            }
+        }
+        
+        // 网络状态监听
+        function updateNetworkStatus() {
+            const networkStatus = document.getElementById('networkStatus');
+            if (navigator.onLine) {
+                networkStatus.textContent = '在线';
+                networkStatus.className = 'status online';
+            } else {
+                networkStatus.textContent = '离线';
+                networkStatus.className = 'status offline';
+            }
+        }
+        
+        // Service Worker 注册
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    swRegistration = await navigator.serviceWorker.register('sw.js');
+                    document.getElementById('swStatus').textContent = 'Service Worker 状态：已注册';
+                    console.log('SW registered: ', swRegistration);
+                } catch (error) {
+                    document.getElementById('swStatus').textContent = 'Service Worker 状态：注册失败';
+                    console.log('SW registration failed: ', error);
+                }
+            }
+        }
+        
+        // Service Worker 注销
+        async function unregisterServiceWorker() {
+            if (swRegistration) {
+                await swRegistration.unregister();
+                document.getElementById('swStatus').textContent = 'Service Worker 状态：已注销';
+            }
+        }
+        
+        // 更新缓存
+        async function updateCache() {
+            if (swRegistration) {
+                swRegistration.update();
+                alert('缓存更新请求已发送');
+            }
+        }
+        
+        // 请求通知权限
+        async function requestNotificationPermission() {
+            if ('Notification' in window) {
+                const permission = await Notification.requestPermission();
+                const notificationInfo = document.getElementById('notificationInfo');
+                const sendBtn = document.getElementById('sendNotification');
+                
+                notificationInfo.textContent = `通知权限：${permission}`;
+                
+                if (permission === 'granted') {
+                    sendBtn.disabled = false;
+                }
+            }
+        }
+        
+        // 发送测试通知
+        function sendTestNotification() {
+            if (Notification.permission === 'granted') {
+                new Notification('PWA Demo 通知', {
+                    body: '这是一个来自PWA应用的测试通知！',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%232196F3"/><text x="50" y="60" text-anchor="middle" fill="white" font-size="30">PWA</text></svg>',
+                    tag: 'pwa-demo'
+                });
+            }
+        }
+        
+        // 显示缓存内容
+        async function showCacheContent() {
+            const cacheList = document.getElementById('cacheList');
+            const cacheNames = await caches.keys();
+            
+            if (cacheNames.length === 0) {
+                cacheList.innerHTML = '<p>暂无缓存内容</p>';
+            } else {
+                let html = '<h5>缓存列表：</h5>';
+                for (const cacheName of cacheNames) {
+                    const cache = await caches.open(cacheName);
+                    const requests = await cache.keys();
+                    html += `<div class="cache-item"><strong>${cacheName}</strong> (${requests.length} 项)</div>`;
+                    requests.forEach(request => {
+                        html += `<div class="cache-item" style="padding-left: 20px;">• ${request.url}</div>`;
+                    });
+                }
+                cacheList.innerHTML = html;
+            }
+            
+            cacheList.style.display = 'block';
+        }
+        
+        // 清除缓存
+        async function clearAllCache() {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
+            alert('所有缓存已清除');
+            document.getElementById('cacheList').style.display = 'none';
+        }
+        
+        // 安装提示处理
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').style.display = 'block';
+            document.getElementById('installableStatus').textContent = '可安装';
+            document.getElementById('installableStatus').className = 'status online';
+        });
+        
+        // 安装按钮点击
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                deferredPrompt = null;
+                document.getElementById('installPrompt').style.display = 'none';
+            }
+        });
+        
+        // 稍后再说按钮
+        document.getElementById('dismissBtn').addEventListener('click', () => {
+            document.getElementById('installPrompt').style.display = 'none';
+        });
+        
+        // 事件监听器
+        document.getElementById('registerSW').addEventListener('click', registerServiceWorker);
+        document.getElementById('unregisterSW').addEventListener('click', unregisterServiceWorker);
+        document.getElementById('updateSW').addEventListener('click', updateCache);
+        document.getElementById('requestNotification').addEventListener('click', requestNotificationPermission);
+        document.getElementById('sendNotification').addEventListener('click', sendTestNotification);
+        document.getElementById('showCache').addEventListener('click', showCacheContent);
+        document.getElementById('clearCache').addEventListener('click', clearAllCache);
+        
+        // 网络状态监听
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', () => {
+            checkSupport();
+            updateNetworkStatus();
+            registerServiceWorker();
+        });
+    </script>
+</body>
+</html>
