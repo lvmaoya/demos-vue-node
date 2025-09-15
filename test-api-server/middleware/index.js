@@ -1,5 +1,6 @@
 const cors = require('cors');
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const config = require('../config/config');
 
 // CORS 配置
@@ -12,6 +13,9 @@ const corsOptions = {
 const setupMiddleware = (app) => {
   // CORS 配置
   app.use(cors(corsOptions));
+  
+  // Cookie 解析
+  app.use(cookieParser());
   
   // 解析 JSON 请求体
   app.use(express.json());

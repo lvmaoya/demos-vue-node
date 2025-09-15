@@ -7,6 +7,7 @@ const { initDirectories, setupGracefulShutdown } = require('./utils/init');
 const usersRouter = require('./routes/users');
 const uploadRouter = require('./routes/upload');
 const filesRouter = require('./routes/files');
+const cookiesRouter = require('./routes/cookies');
 
 const app = express();
 
@@ -20,6 +21,7 @@ setupMiddleware(app);
 app.use('/api/users', usersRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/files', filesRouter);
+app.use('/api/cookies', cookiesRouter);
 
 
 
@@ -43,6 +45,7 @@ app.listen(config.PORT, () => {
   console.log('  GET  /api/files - 获取文件列表');
   console.log('  DELETE /api/files/all - 删除所有文件');
   console.log('  DELETE /api/files/:filename - 删除单个文件');
+  console.log('  GET  /api/cookies/data - 获取数据并设置Cookie，打印请求中的Cookie');
 });
 
 // 设置优雅关闭
