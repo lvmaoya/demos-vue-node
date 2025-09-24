@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquid Glass Tab - SVG滤镜实现</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+        }
+
+        /* 背景动态效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.4) 0%, transparent 50%);
+            animation: backgroundMove 15s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundMove {
+            0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+            33% { transform: translateX(-20px) translateY(-20px) rotate(1deg); }
+            66% { transform: translateX(20px) translateY(20px) rotate(-1deg); }
+        }
+
+        .tab-container {
+            position: relative;
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .tab {
+            position: relative;
+            padding: 16px 32px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 15px;
+            border-radius: 18px;
+            z-index: 1;
+        }
+
+        .tab:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .tab.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            filter: url(#liquid-glass-filter);
+        }
+
+        .liquid-indicator {
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.8) 50%, 
+                transparent 100%);
+            border-radius: 2px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: blur(1px);
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG滤镜定义 -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <!-- Liquid Glass 主滤镜 -->
+            <filter id="liquid-glass-filter" x="-20%" y="-20%" width="140%" height="140%">
+                <!-- 噪声纹理生成 -->
+                <feTurbulence 
+                    baseFrequency="0.02 0.01" 
+                    numOctaves="3" 
+                    result="noise">
+                    <animate attributeName="baseFrequency" 
+                        values="0.02 0.01;0.025 0.015;0.02 0.01" 
+                        dur="8s" repeatCount="indefinite"/>
+                </feTurbulence>
+                
+                <!-- 边缘折射效果 -->
+                <feDisplacementMap 
+                    in="SourceGraphic" 
+                    in2="noise" 
+                    scale="3" 
+                    xChannelSelector="R" 
+                    yChannelSelector="G" 
+                    result="displaced"/>
+                
+                <!-- 高斯模糊 -->
+                <feGaussianBlur 
+                    in="displaced" 
+                    stdDeviation="0.5" 
+                    result="blurred"/>
+                
+                <!-- 边缘高光 -->
+                <feMorphology 
+                    in="SourceAlpha" 
+                    operator="dilate" 
+                    radius="1" 
+                    result="dilated"/>
+                
+                <feGaussianBlur 
+                    in="dilated" 
+                    stdDeviation="2" 
+                    result="highlight-blur"/>
+                
+                <feFlood 
+                    flood-color="rgba(255,255,255,0.6)" 
+                    result="highlight-color"/>
+                
+                <feComposite 
+                    in="highlight-color" 
+                    in2="highlight-blur" 
+                    operator="in" 
+                    result="highlight"/>
+                
+                <!-- 组合所有效果 -->
+                <feMerge>
+                    <feMergeNode in="highlight"/>
+                    <feMergeNode in="blurred"/>
+                </feMerge>
+            </filter>
+            
+            <!-- 动态渐变 -->
+            <linearGradient id="liquid-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:rgba(255,255,255,0);stop-opacity:0">
+                    <animate attributeName="stop-opacity" 
+                        values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
+                </stop>
+                <stop offset="50%" style="stop-color:rgba(255,255,255,0.8);stop-opacity:0.8">
+                    <animate attributeName="stop-opacity" 
+                        values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                </stop>
+                <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0">
+                    <animate attributeName="stop-opacity" 
+                        values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
+                </stop>
+            </linearGradient>
+        </defs>
+    </svg>
+    <div class="tab-container">
+        <div class="tab active" data-tab="home">
+            首页
+        </div>
+        <div class="tab" data-tab="about">
+            关于
+        </div>
+        <div class="tab" data-tab="services">
+            服务
+        </div>
+        <div class="tab" data-tab="portfolio">
+            作品
+        </div>
+        <div class="tab" data-tab="contact">
+            联系
+        </div>
+        <div class="liquid-indicator"></div>
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab');
+        const indicator = document.querySelector('.liquid-indicator');
+        const container = document.querySelector('.tab-container');
+
+        function updateIndicator(activeTab) {
+            const tabRect = activeTab.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            indicator.style.width = `${tabRect.width}px`;
+            indicator.style.left = `${tabRect.left - containerRect.left}px`;
+        }
+
+        function switchTab(targetTab) {
+            // 移除所有活动状态
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 添加活动状态到目标标签
+            targetTab.classList.add('active');
+            
+            // 更新液体指示器位置
+            updateIndicator(targetTab);
+        }
+
+        // 为每个标签添加点击事件
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchTab(tab);
+            });
+            
+            // 添加鼠标悬停效果
+            tab.addEventListener('mouseenter', () => {
+                if (!tab.classList.contains('active')) {
+                    tab.style.transform = 'translateY(-2px)';
+                }
+            });
+            
+            tab.addEventListener('mouseleave', () => {
+                if (!tab.classList.contains('active')) {
+                    tab.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        // 初始化指示器位置
+        const activeTab = document.querySelector('.tab.active');
+        if (activeTab) {
+            setTimeout(() => {
+                updateIndicator(activeTab);
+            }, 100);
+        }
+
+        // 窗口大小改变时重新计算指示器位置
+        window.addEventListener('resize', () => {
+            const currentActive = document.querySelector('.tab.active');
+            if (currentActive) {
+                updateIndicator(currentActive);
+            }
+        });
+    </script>
+</body>
+</html>

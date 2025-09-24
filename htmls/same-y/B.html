@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>B 页面</title>
+  <style>
+    body {
+      height: 2000px;
+      background: linear-gradient(white, pink);
+    }
+    a {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 8px 12px;
+      background: #28a745;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <a href="a.html">返回 A 页面</a>
+
+  <script>
+    window.addEventListener("load", () => {
+      const pos = sessionStorage.getItem("scrollY");
+      if (pos) {
+        window.scrollTo(0, parseInt(pos, 10));
+        sessionStorage.removeItem("scrollY"); // 用完清除，避免影响下次
+      }
+    });
+  </script>
+</body>
+</html>
