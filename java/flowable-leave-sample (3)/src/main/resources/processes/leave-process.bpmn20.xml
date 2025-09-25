@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="Examples">
+
+  <process id="leaveProcess" name="请假审批流程" isExecutable="true">
+    <startEvent id="startEvent" name="开始"/>
+
+    <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="managerApproval"/>
+
+    <userTask id="managerApproval" name="经理审批" flowable:assignee="manager"/>
+    <sequenceFlow id="flow2" sourceRef="managerApproval" targetRef="managerDecision"/>
+
+    <exclusiveGateway id="managerDecision" name="经理是否同意"/>
+    <sequenceFlow id="flow3" sourceRef="managerDecision" targetRef="rejectedEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!approved}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow4" sourceRef="managerDecision" targetRef="hrApproval">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approved}]]></conditionExpression>
+    </sequenceFlow>
+
+    <userTask id="hrApproval" name="HR审批" flowable:assignee="hr"/>
+    <sequenceFlow id="flow5" sourceRef="hrApproval" targetRef="hrDecision"/>
+
+    <exclusiveGateway id="hrDecision" name="HR是否同意"/>
+    <sequenceFlow id="flow6" sourceRef="hrDecision" targetRef="rejectedEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!approved}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow7" sourceRef="hrDecision" targetRef="approvedEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approved}]]></conditionExpression>
+    </sequenceFlow>
+
+    <endEvent id="approvedEnd" name="同意"/>
+    <endEvent id="rejectedEnd" name="拒绝"/>
+  </process>
+</definitions>
