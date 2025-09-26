@@ -1,0 +1,24 @@
+server:
+  port: 8085
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: gateway-service
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+    gateway:
+      discovery:
+        locator:
+          enabled: true  # 开启服务发现路由（可以通过服务名直接访问）
+          lower-case-service-id: true # 服务名小写化，避免大小写问题
+      routes:
+        - id: provider_route
+          uri: lb://service-provider
+          predicates:
+            - Path=/provider/**
+          filters:
+            - StripPrefix=1
