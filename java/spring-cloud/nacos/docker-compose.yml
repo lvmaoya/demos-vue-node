@@ -9,6 +9,5 @@ services:
       - NACOS_AUTH_IDENTITY_KEY=Z2hqa2xwbW5ic3FydHZ3eHl6YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eQ==
       - NACOS_AUTH_IDENTITY_VALUE=Z2hqa2xwbW5ic3FydHZ3eHl6YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eQ==
     ports:
-      - "8080:8080"
       - "8848:8848"
       - "9848:9848"
