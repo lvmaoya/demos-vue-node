@@ -44,8 +44,6 @@
 /* 全局重置 */
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html {
@@ -104,7 +102,7 @@ p {
 button {
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--border-color);
-  padding: 0.6em 1.2em;
+  /* padding: 0.6em 1.2em; */
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
