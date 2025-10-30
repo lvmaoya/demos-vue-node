@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <router-view />
-    <ChatWidget :bubble="true" :endpointUrl="endpointUrl" :greetings="greetings" :questions="questions" />
+    <ChatWidget botName="Test-bot" :endpointUrl="endpointUrl" :greetings="greetings" :questions="questions" />
   </div>
 </template>
 
