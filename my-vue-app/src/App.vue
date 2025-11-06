@@ -9,14 +9,8 @@
 import { ChatWidget } from '@lvmaoya/chat-bot';
 // 示例属性，可根据需要调整
 const endpointUrl = "http://localhost:8080/h5/chat/rag/stream";
-const greetings = ['Hi, there! Lvmaoya is at your service! How can I assist you today?'];
-const questions = [
-  "What is the capital of China",
-  "Who is the most handsome person in the world",
-  "Please share a story with me",
-  "Tell me a joke",
-  "Introduce yourself",
-];
+const greetings = ['您好，请问有什么可以帮到您？'];
+const questions = [];
 </script>
 
 <style>
