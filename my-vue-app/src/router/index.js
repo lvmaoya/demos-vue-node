@@ -32,6 +32,12 @@ const routes = [
     name: 'FileUploadDemo',
     // 懒加载：只有访问时才加载组件
     component: () => import('../views/FileUploadDemo.vue')
+  },
+  {
+    path: '/scroll-demo',
+    name: 'ScrollDemo',
+    // 懒加载：只有访问时才加载组件
+    component: () => import('../views/ScrollDemo.vue')
   }
 ]
 

@@ -24,6 +24,12 @@
         <p>多种文件上传方案：单文件、多文件、拖拽上传等</p>
         <router-link to="/upload" class="btn">查看演示</router-link>
       </div>
+
+      <div class="card">
+        <h3>🌀 无限列表滚动演示</h3>
+        <p>九块大屏示例：上三横向滚动、下六纵向滚动，悬停暂停</p>
+        <router-link to="/scroll-demo" class="btn">查看演示</router-link>
+      </div>
     </div>
   </div>
 </template>
