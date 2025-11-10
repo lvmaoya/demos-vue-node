@@ -38,6 +38,12 @@ const routes = [
     name: 'ScrollDemo',
     // 懒加载：只有访问时才加载组件
     component: () => import('../views/ScrollDemo.vue')
+  },
+  {
+    path: '/leak-demo',
+    name: 'LeakDemo',
+    // 懒加载：只有访问时才加载组件
+    component: () => import('../views/LeakDemo.vue')
   }
 ]
 

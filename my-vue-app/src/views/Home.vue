@@ -30,6 +30,12 @@
         <p>九块大屏示例：上三横向滚动、下六纵向滚动，悬停暂停</p>
         <router-link to="/scroll-demo" class="btn">查看演示</router-link>
       </div>
+
+      <div class="card">
+        <h3>🧪 内存泄露研究</h3>
+        <p>可控造泄露场景：数组持有、事件监听、脱离DOM节点，配合 DevTools 观察内存变化与回收。</p>
+        <router-link to="/leak-demo" class="btn">查看演示</router-link>
+      </div>
     </div>
   </div>
 </template>
