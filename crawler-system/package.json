@@ -1,0 +1,20 @@
+{
+  "name": "crawler-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "crawl:json": "node src/index.js --format=json",
+    "crawl:csv": "node src/index.js --format=csv",
+    "dry-run": "node src/index.js --dry-run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cheerio": "^1.1.2"
+  }
+}
